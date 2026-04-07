@@ -1,4 +1,4 @@
-package main.java.com.kofta.app.entities;
+package com.kofta.app.entities;
 
 public class Pod {
     String name;
