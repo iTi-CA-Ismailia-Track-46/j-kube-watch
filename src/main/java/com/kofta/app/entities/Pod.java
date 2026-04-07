@@ -1,11 +1,6 @@
 package com.kofta.app.entities;
 
-public class Pod {
-
-    String name;
-    String namespace;
-    int restartCount;
-    PodStatus podStatus;
+public record Pod(String name, String namespace, int restartCount, PodStatus podStatus, Container[] containers) {
 }
 
 enum PodStatus {
