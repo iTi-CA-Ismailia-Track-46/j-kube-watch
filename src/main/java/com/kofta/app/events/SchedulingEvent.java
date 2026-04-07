@@ -7,4 +7,4 @@ public record SchedulingEvent(
     String rawMessage,
     Optional<String> targetNode,
     boolean isSuccessful
-) implements KubeEvent {}
+) implements PodEvent {}
