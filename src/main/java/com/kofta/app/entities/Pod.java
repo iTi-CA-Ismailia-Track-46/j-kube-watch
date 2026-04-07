@@ -1,10 +1,10 @@
 package com.kofta.app.entities;
 
 public class Pod {
+
     String name;
     String namespace;
-    int restartcount;
-    String image;
+    int restartCount;
     PodStatus podStatus;
 }
 
