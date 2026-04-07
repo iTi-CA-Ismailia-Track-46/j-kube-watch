@@ -1,10 +1,7 @@
 package com.kofta.app.entities;
 
-public record Container(String image, ContainerStatus status, int restartCount) {
-}
-
-enum ContainerStatus {
-    Waiting,
-    Running,
-    Terminated,
-}
+public record Container(
+    String image,
+    ContainerStatus status,
+    int restartCount
+) {}
