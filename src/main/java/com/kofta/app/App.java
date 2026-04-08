@@ -1,6 +1,6 @@
 package com.kofta.app;
 
-import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.Event;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
@@ -10,13 +10,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-/**
- * Hello world!
- */
 public class App {
 
-    public static void main(String[] args) throws IOException {
-        var content = Files.readString(Path.of("/home/kofta/.kube/config"));
+    public static void main(String[] args) throws IOException, InterruptedException {
+        var content = Files.readString(Path.of("D:\\Self Study\\End to End Project\\j-kube-watch\\config"));
         var config = Config.fromKubeconfig(content);
 
         KubernetesClient client = new KubernetesClientBuilder()
@@ -24,29 +21,29 @@ public class App {
             .build();
 
         client
-            .pods()
-            .inNamespace("default")
+            .v1()
+            .events()
             .watch(
-                new Watcher<Pod>() {
-                    @Override
-                    public void eventReceived(Action action, Pod resource) {
-                        System.out.print(action + " ");
-                        System.out.print(
-                            resource.getMetadata().getName() + " "
-                        );
-                        System.out.println(
-                            resource.getStatus().getConditions()
-                        );
-                    }
-
-                    @Override
-                    public void onClose(WatcherException cause) {
-                        // TODO Auto-generated method stub
-                        throw new UnsupportedOperationException(
-                            "Unimplemented method 'onClose'"
-                        );
-                    }
-                }
+                new Events()
             );
+
+    }
+}
+
+
+class Events implements Watcher<Event> {
+    @Override
+    public void eventReceived(Action action, Event resource) {
+        // System.out.print(resource.getMessage() + " ");
+        // System.out.print(resource.getInvolvedObject().getKind() + " ");
+        // System.out.print(resource.getInvolvedObject().getName() + " ");
+        // System.out.print(resource.getReason() + " ");
+        // System.out.print(resource.getEventTime() + " ");
+        // System.out.println(resource.getMetadata().getNamespace() + " ");
+        // System.out.println("*******************************************");
+    }
+
+    @Override
+    public void onClose(WatcherException cause) {
     }
 }
