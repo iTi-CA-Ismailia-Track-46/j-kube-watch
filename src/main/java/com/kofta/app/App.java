@@ -1,5 +1,6 @@
 package com.kofta.app;
 
+import com.kofta.app.events.EventRouter;
 import io.fabric8.kubernetes.api.model.Event;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -32,13 +33,16 @@ public class App {
 class Events implements Watcher<Event> {
 
     @Override
-    public void eventReceived(Action action, Event resource) {
-        System.out.print(resource.getMessage() + " ");
-        System.out.print(resource.getInvolvedObject().getKind() + " ");
-        System.out.print(resource.getInvolvedObject().getName() + " ");
-        System.out.print(resource.getReason() + " ");
-        System.out.print(resource.getEventTime() + " ");
-        System.out.println(resource.getMetadata().getNamespace() + " ");
+    public void eventReceived(Action action, Event event) {
+        System.out.println(EventRouter.route(event));
+
+        // System.out.print(resource.getMessage() + " ");
+        // System.out.print(resource.getInvolvedObject().getKind() + " ");
+        // System.out.print(resource.getInvolvedObject().getName() + " ");
+        // System.out.print(resource.getReason() + " ");
+        // System.out.print(resource.getEventTime() + " ");
+        // System.out.println(resource.getMetadata().getNamespace() + " ");
+        // System.out.println(resource.getMessage());
         System.out.println("*******************************************");
     }
 
