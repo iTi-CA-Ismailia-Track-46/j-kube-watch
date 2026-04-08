@@ -1,30 +1,52 @@
 package com.kofta.app;
 
-import io.kubernetes.client.openapi.ApiClient;
-import io.kubernetes.client.openapi.ApiException;
-import io.kubernetes.client.openapi.Configuration;
-import io.kubernetes.client.openapi.apis.CoreV1Api;
-import io.kubernetes.client.util.Config;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.client.Config;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientBuilder;
+import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.WatcherException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Hello world!
  */
 public class App {
 
-    public static void main(String[] args) throws IOException, ApiException {
-        ApiClient apiClient = Config.defaultClient();
-        Configuration.setDefaultApiClient(apiClient);
+    public static void main(String[] args) throws IOException {
+        var content = Files.readString(Path.of("/home/kofta/.kube/config"));
+        var config = Config.fromKubeconfig(content);
 
-        var api = new CoreV1Api();
+        KubernetesClient client = new KubernetesClientBuilder()
+            .withConfig(config)
+            .build();
 
-        var nodes = api
-            .listNode()
-            .labelSelector("beta.kubernetes.io/arch=amd63")
-            .execute();
+        client
+            .pods()
+            .inNamespace("default")
+            .watch(
+                new Watcher<Pod>() {
+                    @Override
+                    public void eventReceived(Action action, Pod resource) {
+                        System.out.print(action + " ");
+                        System.out.print(
+                            resource.getMetadata().getName() + " "
+                        );
+                        System.out.println(
+                            resource.getStatus().getConditions()
+                        );
+                    }
 
-        for (var node : nodes.getItems()) {
-            System.out.println(node.getMetadata().getName());
-        }
+                    @Override
+                    public void onClose(WatcherException cause) {
+                        // TODO Auto-generated method stub
+                        throw new UnsupportedOperationException(
+                            "Unimplemented method 'onClose'"
+                        );
+                    }
+                }
+            );
     }
 }
