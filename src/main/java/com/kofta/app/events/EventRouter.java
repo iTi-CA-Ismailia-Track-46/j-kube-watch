@@ -9,6 +9,7 @@ public class EventRouter {
         switch (event.getReason()) {
             case "Pulled":
             case "Pulling":
+            case "BackOff":
             case "Failed": {
                 return new ImageEvent(
                     PodContext.fromEvent(event),
@@ -19,6 +20,7 @@ public class EventRouter {
                 );
             }
             case "Scheduling":
+            case "Scheduled":
             case "FailedScheduling": {
                 // TODO: FIX
                 return new SchedulingEvent(
@@ -30,6 +32,7 @@ public class EventRouter {
             }
             case "STARTED":
             case "STOPPED":
+            case "RELOAD":
             case "RESTARTED":   
             case "CREATED":
             case "DELETED": {

@@ -3,6 +3,7 @@ package com.kofta.app.events;
 public enum LifecycleEventStatus {
     STARTED,
     STOPPED,
+    RELOAD,
     RESTARTED,
     CREATED,
     DELETED;

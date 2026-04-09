@@ -35,6 +35,7 @@ class Events implements Watcher<Event> {
     @Override
     public void eventReceived(Action action, Event event) {
         System.out.println(EventRouter.route(event));
+        System.out.println(event.getReason());
 
         // System.out.print(resource.getMessage() + " ");
         // System.out.print(resource.getInvolvedObject().getKind() + " ");
