@@ -28,7 +28,39 @@ public class EventRouter {
                     true
                 );
             }
-            // ...
+            case "STARTED":
+            case "STOPPED":
+            case "RESTARTED":   
+            case "CREATED":
+            case "DELETED": {
+                return new LifecycleEvent(
+                    PodContext.fromEvent(event),
+                    event.getMessage(),
+                    event.getInvolvedObject().getName(),
+                    LifecycleEventStatus.fromString(event.getReason())
+                );
+            }
+            case "LivenessProbeFailed":
+            case "ReadinessProbeFailed": {
+                return new ProbeFailureEvent(
+                    PodContext.fromEvent(event),
+                    event.getMessage(),
+                    event.getInvolvedObject().getName(),
+                    event.getReason()
+                );
+            }
+            case "CONFIGMAP":
+            case "SECRET":      
+            case "PERSISTENT_VOLUME_CLAIM":
+            case "EMPTY_DIR": {
+                return new VolumeEvent(
+                    PodContext.fromEvent(event),
+                    event.getMessage(),
+                    event.getInvolvedObject().getName(),
+                    true, // TODO: FIX
+                    VolumeType.fromString(event.getReason()) // TODO: FIX
+                );
+            }
 
             default: {
                 return new EvictionEvent(
