@@ -1,6 +1,8 @@
 package com.kofta.app;
 
+import com.kofta.app.dispatchers.WebhookDispatcher;
 import com.kofta.app.events.EventRouter;
+import com.kofta.app.events.PodEvent;
 import io.fabric8.kubernetes.api.model.Event;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -34,8 +36,8 @@ class Events implements Watcher<Event> {
 
     @Override
     public void eventReceived(Action action, Event event) {
-        System.out.println(EventRouter.route(event));
-        System.out.println(event.getReason());
+        PodEvent podEvent = EventRouter.route(event);
+        var dispatcher = new WebhookDispatcher();
 
         // System.out.print(resource.getMessage() + " ");
         // System.out.print(resource.getInvolvedObject().getKind() + " ");
