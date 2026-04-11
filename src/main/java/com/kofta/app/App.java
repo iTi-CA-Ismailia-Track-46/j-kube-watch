@@ -1,14 +1,14 @@
 package com.kofta.app;
 
-import com.kofta.app.dispatchers.WebhookDispatcher;
 import com.kofta.app.events.EventRouter;
-import com.kofta.app.events.PodEvent;
-import io.fabric8.kubernetes.api.model.Event;
+import com.kofta.app.events.EventWatcher;
+import com.kofta.app.events.PodEventFactory;
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
-import io.fabric8.kubernetes.client.Watcher;
-import io.fabric8.kubernetes.client.WatcherException;
+import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
+import io.fabric8.kubernetes.client.informers.cache.Lister;
 import io.github.cdimascio.dotenv.Dotenv;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,7 +20,6 @@ public class App {
         throws IOException, InterruptedException {
         var dotenv = Dotenv.load();
         var configPath = dotenv.get("CONFIG_FILE_PATH");
-
         var content = Files.readString(Path.of(configPath));
         var config = Config.fromKubeconfig(content);
 
@@ -28,27 +27,14 @@ public class App {
             .withConfig(config)
             .build();
 
-        client.v1().events().watch(new Events());
+        SharedIndexInformer<Pod> podInformer = client.pods().inform();
+
+        Lister<Pod> podCache = new Lister<>(podInformer.getIndexer());
+        var podEventFactory = new PodEventFactory(podCache);
+        var router = new EventRouter(podEventFactory);
+
+        podInformer.start();
+
+        client.v1().events().watch(new EventWatcher(router));
     }
-}
-
-class Events implements Watcher<Event> {
-
-    @Override
-    public void eventReceived(Action action, Event event) {
-        PodEvent podEvent = EventRouter.route(event);
-        var dispatcher = new WebhookDispatcher();
-
-        // System.out.print(resource.getMessage() + " ");
-        // System.out.print(resource.getInvolvedObject().getKind() + " ");
-        // System.out.print(resource.getInvolvedObject().getName() + " ");
-        // System.out.print(resource.getReason() + " ");
-        // System.out.print(resource.getEventTime() + " ");
-        // System.out.println(resource.getMetadata().getNamespace() + " ");
-        // System.out.println(resource.getMessage());
-        System.out.println("*******************************************");
-    }
-
-    @Override
-    public void onClose(WatcherException cause) {}
 }

@@ -1,0 +1,124 @@
+---
+# 1. Normal Pod + Successful Volume Mount
+# Expected Events: SCHEDULED, PULLING, PULLED, CREATED, STARTED, SUCCESSFULATTACHVOLUME
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-normal-and-volume-success
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx:alpine
+      volumeMounts:
+        - name: empty-vol
+          mountPath: /data
+  volumes:
+    - name: empty-vol
+      emptyDir: {}
+
+---
+# 2. Image Pull Failure
+# Expected Events: FAILED (ImagePullBackOff / ErrImagePull), BACKOFF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-image-pull-failure
+spec:
+  containers:
+    - name: bad-image-container
+      image: nginx:this-tag-does-not-exist-12345
+
+---
+# 3. Scheduling Failure
+# Expected Events: FAILEDSCHEDULING (Pod stays in Pending state)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-scheduling-failure
+spec:
+  nodeSelector:
+    this-node-does-not-exist: "true"
+  containers:
+    - name: wait-container
+      image: busybox
+      command: ["sleep", "3600"]
+
+---
+# 4. CrashLoopBackOff (Lifecycle Events)
+# Expected Events: CREATED, STARTED, BACKOFF, RESTARTED, STOPPED (possibly)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-crashloop-backoff
+spec:
+  containers:
+    - name: crash-container
+      image: busybox
+      # Immediately exits with an error code, causing Kubelet to restart it repeatedly
+      command: ["/bin/sh", "-c", "exit 1"]
+
+---
+# 5. Probe Failure
+# Expected Events: UNHEALTHY, KILLING (once it fails enough times)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-probe-failure
+spec:
+  containers:
+    - name: unhealthy-container
+      image: busybox
+      command: ["/bin/sh", "-c", "sleep 3600"]
+      livenessProbe:
+        exec:
+          # Tries to cat a file that doesn't exist, failing the probe
+          command: ["cat", "/tmp/i-do-not-exist.txt"]
+        initialDelaySeconds: 2
+        periodSeconds: 2
+
+---
+# 6. Volume Mount Failure
+# Expected Events: FAILEDMOUNT
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-volume-mount-failure
+spec:
+  containers:
+    - name: wait-container
+      image: busybox
+      command: ["sleep", "3600"]
+      volumeMounts:
+        - name: missing-configmap-vol
+          mountPath: /etc/config
+  volumes:
+    - name: missing-configmap-vol
+      configMap:
+        # This ConfigMap does not exist in the cluster
+        name: non-existent-configmap
+
+---
+# 7. Eviction (via Ephemeral Storage Limit)
+# Expected Events: EVICTED, KILLING
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-eviction-storage
+spec:
+  containers:
+    - name: fat-container
+      image: busybox
+      # Writes a 50MB file to the emptyDir volume, which is limited to 10MB
+      command:
+        [
+          "/bin/sh",
+          "-c",
+          "dd if=/dev/zero of=/cache/bigfile bs=1M count=50 && sleep 3600",
+        ]
+      volumeMounts:
+        - name: cache-volume
+          mountPath: /cache
+  volumes:
+    - name: cache-volume
+      emptyDir:
+        sizeLimit: 10Mi

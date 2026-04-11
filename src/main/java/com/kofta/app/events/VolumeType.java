@@ -1,10 +1,11 @@
 package com.kofta.app.events;
 
 public enum VolumeType {
-    CONFIGMAP,
+    CONFIG_MAP,
     SECRET,
-    PERSISTENT_VOLUME_CLAIM,
-    EMPTY_DIR;
+    PVC,
+    EMPTY_DIR,
+    HOST_PATH;
 
     public static VolumeType fromString(String input) {
         return VolumeType.valueOf(input.trim().toUpperCase());
