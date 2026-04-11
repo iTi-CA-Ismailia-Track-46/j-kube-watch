@@ -4,9 +4,10 @@ public enum LifecycleEventStatus {
     STARTED,
     STOPPED,
     RELOAD,
+    BACKOFF,
     RESTARTED,
     CREATED,
-    DELETED;
+    KILLING;
 
     public static LifecycleEventStatus fromString(String input) {
         return LifecycleEventStatus.valueOf(input.trim().toUpperCase());

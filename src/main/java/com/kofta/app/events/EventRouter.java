@@ -6,11 +6,10 @@ import java.util.Optional;
 public class EventRouter {
 
     public static PodEvent route(Event event) {
-        switch (event.getReason()) {
-            case "Pulled":
-            case "Pulling":
-            case "BackOff":
-            case "Failed": {
+        switch (event.getReason().toUpperCase()) {
+            case "PULLED":
+            case "PULLING":
+            case "FAILED": {
                 return new ImageEvent(
                     PodContext.fromEvent(event),
                     event.getMessage(),
@@ -19,9 +18,9 @@ public class EventRouter {
                     ImageStatus.fromString(event.getReason())
                 );
             }
-            case "Scheduling":
-            case "Scheduled":
-            case "FailedScheduling": {
+            case "SCHEDULING":
+            case "SCHEDULED":
+            case "FAILEDSCHEDULING": {
                 // TODO: FIX
                 return new SchedulingEvent(
                     PodContext.fromEvent(event),
@@ -33,9 +32,10 @@ public class EventRouter {
             case "STARTED":
             case "STOPPED":
             case "RELOAD":
-            case "RESTARTED":   
+            case "RESTARTED":
             case "CREATED":
-            case "DELETED": {
+            case "BACKOFF":
+            case "KILLING": {
                 return new LifecycleEvent(
                     PodContext.fromEvent(event),
                     event.getMessage(),
@@ -43,19 +43,17 @@ public class EventRouter {
                     LifecycleEventStatus.fromString(event.getReason())
                 );
             }
-            case "LivenessProbeFailed":
-            case "ReadinessProbeFailed": {
+            case "UNHEALTHY": {
                 return new ProbeFailureEvent(
                     PodContext.fromEvent(event),
                     event.getMessage(),
                     event.getInvolvedObject().getName(),
+                    // TODO: FIX
                     event.getReason()
                 );
             }
-            case "CONFIGMAP":
-            case "SECRET":      
-            case "PERSISTENT_VOLUME_CLAIM":
-            case "EMPTY_DIR": {
+            case "SUCCESSFULATTACHVOLUME":
+            case "FAILEDMOUNT": {
                 return new VolumeEvent(
                     PodContext.fromEvent(event),
                     event.getMessage(),
@@ -64,7 +62,6 @@ public class EventRouter {
                     VolumeType.fromString(event.getReason()) // TODO: FIX
                 );
             }
-
             default: {
                 return new EvictionEvent(
                     PodContext.fromEvent(event),
