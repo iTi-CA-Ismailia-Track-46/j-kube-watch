@@ -1,5 +1,8 @@
 package com.kofta.app.events;
 
-public record LifecycleEvent(PodContext context, String rawMessage, String containerName, LifecycleEventStatus status)
+import java.time.ZonedDateTime;
+
+public record LifecycleEvent(PodContext context, String rawMessage, String containerName, LifecycleEventStatus status, String type, ZonedDateTime timestamp
+)
         implements PodEvent {
 }

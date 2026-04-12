@@ -4,6 +4,8 @@ import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Event;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.informers.cache.Lister;
+
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -20,7 +22,9 @@ public class PodEventFactory {
             PodContext.fromEvent(event),
             event.getMessage(),
             extractImageName(event),
-            ImageStatus.fromString(event.getReason())
+            ImageStatus.fromString(event.getReason()),
+            event.getType(),
+            ZonedDateTime.parse(event.getLastTimestamp())
         );
     }
 
@@ -31,7 +35,9 @@ public class PodEventFactory {
             event.getMessage(),
             nodeName,
             !event.getReason().toUpperCase().equals("FAILEDSCHEDULING") &&
-                nodeName.isPresent()
+                nodeName.isPresent(),
+            event.getType(),
+            ZonedDateTime.parse(event.getLastTimestamp())
         );
     }
 
@@ -40,7 +46,9 @@ public class PodEventFactory {
             PodContext.fromEvent(event),
             event.getMessage(),
             getContainer(event).get().getName(),
-            LifecycleEventStatus.fromString(event.getReason())
+            LifecycleEventStatus.fromString(event.getReason()),
+            event.getType(),
+            ZonedDateTime.parse(event.getLastTimestamp())
         );
     }
 
@@ -49,7 +57,9 @@ public class PodEventFactory {
             PodContext.fromEvent(event),
             event.getMessage(),
             getContainer(event).get().getName(),
-            extractProbeType(event)
+            extractProbeType(event),
+            event.getType(),
+            ZonedDateTime.parse(event.getLastTimestamp())
         );
     }
 
@@ -60,7 +70,9 @@ public class PodEventFactory {
             event.getMessage(),
             volumeName,
             !event.getReason().toUpperCase().equals("FAILEDMOUNT"),
-            extractVolumeType(event, volumeName)
+            extractVolumeType(event, volumeName),
+            event.getType(),
+            ZonedDateTime.parse(event.getLastTimestamp())
         );
     }
 
@@ -68,7 +80,9 @@ public class PodEventFactory {
         return new EvictionEvent(
             PodContext.fromEvent(event),
             event.getMessage(),
-            event.getReason()
+            event.getReason(),
+            event.getType(),
+            ZonedDateTime.parse(event.getLastTimestamp())
         );
     }
 
