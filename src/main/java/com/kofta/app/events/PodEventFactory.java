@@ -17,15 +17,25 @@ public class PodEventFactory {
         this.podCache = podCache;
     }
 
+    private ZonedDateTime parseTimestamp(String timestamp) {
+        if (timestamp == null || timestamp.isBlank()) {
+            return ZonedDateTime.now();
+        }
+        try {
+            return ZonedDateTime.parse(timestamp);
+        } catch (Exception e) {
+            return ZonedDateTime.now();
+        }
+    }
+
     public ImageEvent createImageEvent(Event event) {
-        String image = extractImageName(event);
         return new ImageEvent(
             PodContext.fromEvent(event),
             event.getMessage(),
-            image,
+            extractImageName(event),
             ImageStatus.fromString(event.getReason()),
             event.getType(),
-            ZonedDateTime.parse(event.getLastTimestamp())
+            parseTimestamp(event.getLastTimestamp())
         );
     }
 
@@ -37,7 +47,7 @@ public class PodEventFactory {
             nodeName,
             !event.getReason().equalsIgnoreCase("FAILEDSCHEDULING") && nodeName.isPresent(),
             event.getType(),
-            ZonedDateTime.parse(event.getLastTimestamp())
+            parseTimestamp(event.getLastTimestamp())
         );
     }
 
@@ -51,7 +61,7 @@ public class PodEventFactory {
             container.get().getName(),
             LifecycleEventStatus.fromString(event.getReason()),
             event.getType(),
-            ZonedDateTime.parse(event.getLastTimestamp())
+            parseTimestamp(event.getLastTimestamp())
         );
     }
 
@@ -65,7 +75,7 @@ public class PodEventFactory {
             container.get().getName(),
             extractProbeType(event),
             event.getType(),
-            ZonedDateTime.parse(event.getLastTimestamp())
+            parseTimestamp(event.getLastTimestamp())
         );
     }
 
@@ -78,7 +88,7 @@ public class PodEventFactory {
             !event.getReason().equalsIgnoreCase("FAILEDMOUNT"),
             extractVolumeType(event, volumeName),
             event.getType(),
-            ZonedDateTime.parse(event.getLastTimestamp())
+            parseTimestamp(event.getLastTimestamp())
         );
     }
 
@@ -88,7 +98,7 @@ public class PodEventFactory {
             event.getMessage(),
             event.getReason(),
             event.getType(),
-            ZonedDateTime.parse(event.getLastTimestamp())
+            parseTimestamp(event.getLastTimestamp())
         );
     }
 
