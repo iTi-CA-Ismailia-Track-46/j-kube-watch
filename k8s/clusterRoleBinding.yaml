@@ -5,7 +5,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: creative-operator-sa
-    namespace: default
+    namespace: creative-operator
 roleRef:
   kind: ClusterRole
   name: creative-operator-role

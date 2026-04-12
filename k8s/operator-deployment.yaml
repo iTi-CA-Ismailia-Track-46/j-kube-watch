@@ -16,5 +16,5 @@ spec:
       serviceAccountName: creative-operator-sa
       containers:
         - name: operator
-          image: adham0/createive-operator:latest
-          imagePullPolicy: Always
+          image: creative-operator:v1
+          imagePullPolicy: Never
