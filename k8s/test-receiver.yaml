@@ -1,0 +1,7 @@
+apiVersion: creative.app/v1
+kind: AlertReceiver
+metadata:
+  name: manager-receiver
+spec:
+  email: "manager@company.com"
+  senderRef: "main-sender"

@@ -1,0 +1,9 @@
+apiVersion: creative.app/v1
+kind: AlertSender
+metadata:
+  name: main-sender
+spec:
+  email: "adhamayad000@gmail.com"
+  host: "smtp.gmail.com"
+  port: "587"
+  secretName: "my-smtp-secret"
