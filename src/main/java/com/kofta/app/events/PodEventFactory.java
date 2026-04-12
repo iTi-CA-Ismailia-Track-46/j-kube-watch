@@ -18,10 +18,11 @@ public class PodEventFactory {
     }
 
     public ImageEvent createImageEvent(Event event) {
+        String image = extractImageName(event);
         return new ImageEvent(
             PodContext.fromEvent(event),
             event.getMessage(),
-            extractImageName(event),
+            image,
             ImageStatus.fromString(event.getReason()),
             event.getType(),
             ZonedDateTime.parse(event.getLastTimestamp())
@@ -34,18 +35,20 @@ public class PodEventFactory {
             PodContext.fromEvent(event),
             event.getMessage(),
             nodeName,
-            !event.getReason().toUpperCase().equals("FAILEDSCHEDULING") &&
-                nodeName.isPresent(),
+            !event.getReason().equalsIgnoreCase("FAILEDSCHEDULING") && nodeName.isPresent(),
             event.getType(),
             ZonedDateTime.parse(event.getLastTimestamp())
         );
     }
 
     public LifecycleEvent createLifecycleEvent(Event event) {
+        Optional<Container> container = getContainer(event);
+        if (container.isEmpty()) return null;
+
         return new LifecycleEvent(
             PodContext.fromEvent(event),
             event.getMessage(),
-            getContainer(event).get().getName(),
+            container.get().getName(),
             LifecycleEventStatus.fromString(event.getReason()),
             event.getType(),
             ZonedDateTime.parse(event.getLastTimestamp())
@@ -53,10 +56,13 @@ public class PodEventFactory {
     }
 
     public ProbeFailureEvent createProbeFailureEvent(Event event) {
+        Optional<Container> container = getContainer(event);
+        if (container.isEmpty()) return null;
+
         return new ProbeFailureEvent(
             PodContext.fromEvent(event),
             event.getMessage(),
-            getContainer(event).get().getName(),
+            container.get().getName(),
             extractProbeType(event),
             event.getType(),
             ZonedDateTime.parse(event.getLastTimestamp())
@@ -69,7 +75,7 @@ public class PodEventFactory {
             PodContext.fromEvent(event),
             event.getMessage(),
             volumeName,
-            !event.getReason().toUpperCase().equals("FAILEDMOUNT"),
+            !event.getReason().equalsIgnoreCase("FAILEDMOUNT"),
             extractVolumeType(event, volumeName),
             event.getType(),
             ZonedDateTime.parse(event.getLastTimestamp())
@@ -100,19 +106,13 @@ public class PodEventFactory {
     private VolumeType extractVolumeType(Event event, String volumeName) {
         if ("Unknown".equals(volumeName)) return null;
         var pod = getCachedPod(event);
-        if (
-            pod == null ||
-            pod.getSpec() == null ||
-            pod.getSpec().getVolumes() == null
-        ) return null;
+        if (pod == null || pod.getSpec() == null || pod.getSpec().getVolumes() == null) return null;
 
         for (var volume : pod.getSpec().getVolumes()) {
             if (volume.getName().equals(volumeName)) {
                 if (volume.getConfigMap() != null) return VolumeType.CONFIG_MAP;
                 if (volume.getSecret() != null) return VolumeType.SECRET;
-                if (
-                    volume.getPersistentVolumeClaim() != null
-                ) return VolumeType.PVC;
+                if (volume.getPersistentVolumeClaim() != null) return VolumeType.PVC;
                 if (volume.getEmptyDir() != null) return VolumeType.EMPTY_DIR;
                 if (volume.getHostPath() != null) return VolumeType.HOST_PATH;
             }
@@ -122,51 +122,45 @@ public class PodEventFactory {
 
     private ProbeType extractProbeType(Event event) {
         var msg = event.getMessage();
-        if (msg.startsWith("Liveness")) {
-            return ProbeType.LIVENESS;
-        } else if (msg.startsWith("Readiness")) {
-            return ProbeType.READINESS;
-        } else if (msg.startsWith("Startup")) {
-            return ProbeType.STARTUP;
-        } else {
-            return null;
-        }
+        if (msg == null) return null;
+        if (msg.startsWith("Liveness")) return ProbeType.LIVENESS;
+        if (msg.startsWith("Readiness")) return ProbeType.READINESS;
+        if (msg.startsWith("Startup")) return ProbeType.STARTUP;
+        return null;
     }
 
     private Optional<String> extractNodeName(Event event) {
         var pod = getCachedPod(event);
+        if (pod == null || pod.getSpec() == null) return Optional.empty();
         return Optional.ofNullable(pod.getSpec().getNodeName());
     }
 
     private Optional<Container> getContainer(Event event) {
         var pod = getCachedPod(event);
         var fieldPath = event.getInvolvedObject().getFieldPath();
+        if (pod == null || pod.getSpec() == null || fieldPath == null) return Optional.empty();
+
         var pattern = Pattern.compile("spec\\.containers\\{(.+?)\\}");
         var matcher = pattern.matcher(fieldPath);
 
-        if (fieldPath != null && matcher.find()) {
+        if (matcher.find()) {
+            String containerName = matcher.group(1);
             for (var container : pod.getSpec().getContainers()) {
-                if (container.getName().equals(matcher.group(1))) {
+                if (container.getName().equals(containerName)) {
                     return Optional.of(container);
                 }
             }
         }
-
         return Optional.empty();
     }
 
     private String extractImageName(Event event) {
-        var container = getContainer(event);
-
-        if (container.isPresent()) {
-            return container.get().getImage();
-        }
-
-        return null;
+        return getContainer(event).map(Container::getImage).orElse(null);
     }
 
     private Pod getCachedPod(Event event) {
         var obj = event.getInvolvedObject();
+        if (obj == null) return null;
         return podCache.namespace(obj.getNamespace()).get(obj.getName());
     }
 }
