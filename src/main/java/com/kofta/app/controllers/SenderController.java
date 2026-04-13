@@ -46,7 +46,7 @@ public class SenderController implements ResourceEventHandler<AlertSender> {
             return;
         }
 
-        String password = new String(Base64.getDecoder().decode(secret.getData().get("password")));
+        String password = secret.getData().get("password");
 
         try {
             Session session = SmtpValidator.validateAndCreateSession(
