@@ -2,6 +2,7 @@ package com.kofta.app.controllers;
 
 import com.kofta.app.crd.receiver.AlertReceiver;
 import com.kofta.app.registry.AlertRegistry;
+
 import io.fabric8.kubernetes.client.informers.ResourceEventHandler;
 
 public class ReceiverController implements ResourceEventHandler<AlertReceiver> {
@@ -31,7 +32,11 @@ public class ReceiverController implements ResourceEventHandler<AlertReceiver> {
         String senderRef = receiver.getSpec().getSenderRef();
 
         if (!registry.hasSender(senderRef)) {
-            System.err.println("[WARNING] Receiver '" + name + "' references an invalid or missing Sender: " + senderRef);
+            System.err.println(
+                    "[WARNING] Receiver '"
+                            + name
+                            + "' references an invalid or missing Sender: "
+                            + senderRef);
         }
 
         registry.addReceiver(name, receiver.getSpec().getEmail(), senderRef);

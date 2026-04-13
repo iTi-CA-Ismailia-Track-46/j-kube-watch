@@ -30,25 +30,23 @@ public class PodEventFactory {
 
     public ImageEvent createImageEvent(Event event) {
         return new ImageEvent(
-            PodContext.fromEvent(event),
-            event.getMessage(),
-            extractImageName(event),
-            ImageStatus.fromString(event.getReason()),
-            event.getType(),
-            parseTimestamp(event.getLastTimestamp())
-        );
+                PodContext.fromEvent(event),
+                event.getMessage(),
+                extractImageName(event),
+                ImageStatus.fromString(event.getReason()),
+                event.getType(),
+                parseTimestamp(event.getLastTimestamp()));
     }
 
     public SchedulingEvent createSchedulingEvent(Event event) {
         var nodeName = extractNodeName(event);
         return new SchedulingEvent(
-            PodContext.fromEvent(event),
-            event.getMessage(),
-            nodeName,
-            !event.getReason().equalsIgnoreCase("FAILEDSCHEDULING") && nodeName.isPresent(),
-            event.getType(),
-            parseTimestamp(event.getLastTimestamp())
-        );
+                PodContext.fromEvent(event),
+                event.getMessage(),
+                nodeName,
+                !event.getReason().equalsIgnoreCase("FAILEDSCHEDULING") && nodeName.isPresent(),
+                event.getType(),
+                parseTimestamp(event.getLastTimestamp()));
     }
 
     public LifecycleEvent createLifecycleEvent(Event event) {
@@ -56,13 +54,12 @@ public class PodEventFactory {
         if (container.isEmpty()) return null;
 
         return new LifecycleEvent(
-            PodContext.fromEvent(event),
-            event.getMessage(),
-            container.get().getName(),
-            LifecycleEventStatus.fromString(event.getReason()),
-            event.getType(),
-            parseTimestamp(event.getLastTimestamp())
-        );
+                PodContext.fromEvent(event),
+                event.getMessage(),
+                container.get().getName(),
+                LifecycleEventStatus.fromString(event.getReason()),
+                event.getType(),
+                parseTimestamp(event.getLastTimestamp()));
     }
 
     public ProbeFailureEvent createProbeFailureEvent(Event event) {
@@ -70,36 +67,33 @@ public class PodEventFactory {
         if (container.isEmpty()) return null;
 
         return new ProbeFailureEvent(
-            PodContext.fromEvent(event),
-            event.getMessage(),
-            container.get().getName(),
-            extractProbeType(event),
-            event.getType(),
-            parseTimestamp(event.getLastTimestamp())
-        );
+                PodContext.fromEvent(event),
+                event.getMessage(),
+                container.get().getName(),
+                extractProbeType(event),
+                event.getType(),
+                parseTimestamp(event.getLastTimestamp()));
     }
 
     public VolumeEvent createVolumeEvent(Event event) {
         String volumeName = extractVolumeName(event);
         return new VolumeEvent(
-            PodContext.fromEvent(event),
-            event.getMessage(),
-            volumeName,
-            !event.getReason().equalsIgnoreCase("FAILEDMOUNT"),
-            extractVolumeType(event, volumeName),
-            event.getType(),
-            parseTimestamp(event.getLastTimestamp())
-        );
+                PodContext.fromEvent(event),
+                event.getMessage(),
+                volumeName,
+                !event.getReason().equalsIgnoreCase("FAILEDMOUNT"),
+                extractVolumeType(event, volumeName),
+                event.getType(),
+                parseTimestamp(event.getLastTimestamp()));
     }
 
     public EvictionEvent createEvictionEvent(Event event) {
         return new EvictionEvent(
-            PodContext.fromEvent(event),
-            event.getMessage(),
-            event.getReason(),
-            event.getType(),
-            parseTimestamp(event.getLastTimestamp())
-        );
+                PodContext.fromEvent(event),
+                event.getMessage(),
+                event.getReason(),
+                event.getType(),
+                parseTimestamp(event.getLastTimestamp()));
     }
 
     private String extractVolumeName(Event event) {

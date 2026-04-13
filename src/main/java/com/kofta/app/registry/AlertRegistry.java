@@ -1,10 +1,11 @@
 package com.kofta.app.registry;
 
-import javax.mail.Session;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.mail.Session;
 
 public class AlertRegistry {
     private final Map<String, Session> activeSenders = new ConcurrentHashMap<>();

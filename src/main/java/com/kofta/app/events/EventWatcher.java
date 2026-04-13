@@ -1,6 +1,7 @@
 package com.kofta.app.events;
 
 import com.kofta.app.dispatchers.AlertDispatcher;
+
 import io.fabric8.kubernetes.api.model.Event;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
@@ -18,7 +19,7 @@ public class EventWatcher implements Watcher<Event> {
     @Override
     public void eventReceived(Action action, Event event) {
         PodEvent podEvent = router.route(event);
-        
+
         if (podEvent != null) {
             dispatcher.dispatch(podEvent);
         }

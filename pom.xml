@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-
 <project
-
     xmlns="http://maven.apache.org/POM/4.0.0"
-
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-
 >
 
   <modelVersion>4.0.0</modelVersion>
@@ -132,6 +127,29 @@
 
     <plugins>
 
+            <plugin>
+                <groupId>com.spotify.fmt</groupId>
+                <artifactId>fmt-maven-plugin</artifactId>
+                <version>2.29</version>
+                <configuration>
+                    <style>AOSP</style>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.google.googlejavaformat</groupId>
+                        <artifactId>google-java-format</artifactId>
+                        <version>1.27.0</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
         <plugin>
 
             <groupId>org.apache.maven.plugins</groupId>
@@ -156,7 +174,9 @@
 
                         <transformers>
 
-                            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                            <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"
+                                >
 
                                 <mainClass>com.kofta.app.App</mainClass>
 
