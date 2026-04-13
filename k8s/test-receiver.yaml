@@ -3,5 +3,5 @@ kind: AlertReceiver
 metadata:
   name: manager-receiver
 spec:
-  email: "manager@company.com"
+  email: "aboayad557@gmail.com"
   senderRef: "main-sender"
