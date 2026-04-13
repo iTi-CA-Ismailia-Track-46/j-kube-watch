@@ -4,135 +4,108 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 >
+    <modelVersion>4.0.0</modelVersion>
 
-  <modelVersion>4.0.0</modelVersion>
+    <groupId>com.kofta.app</groupId>
 
+    <artifactId>j-kube-watch</artifactId>
 
+    <version>1.0-SNAPSHOT</version>
 
-  <groupId>com.kofta.app</groupId>
+    <name>j-kube-watch</name>
 
-  <artifactId>j-kube-watch</artifactId>
+    <url>http://www.example.com</url>
 
-  <version>1.0-SNAPSHOT</version>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <maven.compiler.release>21</maven.compiler.release>
+    </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.junit</groupId>
 
-  <name>j-kube-watch</name>
+                <artifactId>junit-bom</artifactId>
 
-  <url>http://www.example.com</url>
+                <version>5.11.0</version>
 
+                <type>pom</type>
 
-
-  <properties>
-
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-    <maven.compiler.release>21</maven.compiler.release>
-
-  </properties>
-
-
-
-  <dependencyManagement>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
 
-      <dependency>
+            <artifactId>junit-jupiter-api</artifactId>
 
-        <groupId>org.junit</groupId>
+            <scope>test</scope>
+        </dependency>
 
-        <artifactId>junit-bom</artifactId>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
 
-        <version>5.11.0</version>
+            <artifactId>junit-jupiter-params</artifactId>
 
-        <type>pom</type>
+            <scope>test</scope>
+        </dependency>
 
-        <scope>import</scope>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
 
-      </dependency>
+            <artifactId>bcpkix-jdk18on</artifactId>
 
+            <version>1.78.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.fabric8</groupId>
+
+            <artifactId>kubernetes-client</artifactId>
+
+            <version>6.13.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+
+            <artifactId>javax.mail</artifactId>
+
+            <version>1.6.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+
+            <artifactId>dotenv-java</artifactId>
+
+            <version>3.0.0</version>
+        </dependency>
+
+        <!-- Source: https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>3.2.3</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
-  </dependencyManagement>
-
-
-
-  <dependencies>
-
-    <dependency>
-
-      <groupId>org.junit.jupiter</groupId>
-
-      <artifactId>junit-jupiter-api</artifactId>
-
-      <scope>test</scope>
-
-    </dependency>
-
-    <dependency>
-
-      <groupId>org.junit.jupiter</groupId>
-
-      <artifactId>junit-jupiter-params</artifactId>
-
-      <scope>test</scope>
-
-    </dependency>
-
-    <dependency>
-
-      <groupId>org.bouncycastle</groupId>
-
-      <artifactId>bcpkix-jdk18on</artifactId>
-
-      <version>1.78.1</version>
-
-    </dependency>
-
-    <dependency>
-
-        <groupId>io.fabric8</groupId>
-
-        <artifactId>kubernetes-client</artifactId>
-
-        <version>6.13.4</version>
-
-    </dependency>
-
-    <dependency>
-
-      <groupId>com.sun.mail</groupId>
-
-      <artifactId>javax.mail</artifactId>
-
-      <version>1.6.2</version>
-
-    </dependency>
-
-    <dependency>
-
-        <groupId>io.github.cdimascio</groupId>
-
-        <artifactId>dotenv-java</artifactId>
-
-        <version>3.0.0</version>
-
-    </dependency>
-
-  </dependencies>
-
-
-
-  <build>
-
-    <plugins>
-
+    <build>
+        <plugins>
             <plugin>
                 <groupId>com.spotify.fmt</groupId>
                 <artifactId>fmt-maven-plugin</artifactId>
                 <version>2.29</version>
                 <configuration>
-                    <style>AOSP</style>
+                    <style>
+                        AOSP
+                    </style>
                 </configuration>
                 <executions>
                     <execution>
@@ -150,152 +123,105 @@
                 </dependencies>
             </plugin>
 
-        <plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
 
-            <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
 
-            <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.2</version>
 
-            <version>3.5.2</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
 
-            <executions>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
 
-                <execution>
-
-                    <phase>package</phase>
-
-                    <goals>
-
-                        <goal>shade</goal>
-
-                    </goals>
-
-                    <configuration>
-
-                        <transformers>
-
-                            <transformer
+                        <configuration>
+                            <transformers>
+                                <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"
                                 >
+                                    <mainClass>com.kofta.app.App</mainClass>
+                                </transformer>
+                            </transformers>
 
-                                <mainClass>com.kofta.app.App</mainClass>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
 
-                            </transformer>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
 
-                        </transformers>
+                                        <exclude>META-INF/*.DSA</exclude>
 
-                        <filters>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
 
-                            <filter>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-clean-plugin</artifactId>
 
-                                <artifact>*:*</artifact>
+                    <version>3.4.0</version>
+                </plugin>
 
-                                <excludes>
+                <plugin>
+                    <artifactId>maven-resources-plugin</artifactId>
 
-                                    <exclude>META-INF/*.SF</exclude>
+                    <version>3.3.1</version>
+                </plugin>
 
-                                    <exclude>META-INF/*.DSA</exclude>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
 
-                                    <exclude>META-INF/*.RSA</exclude>
+                    <version>3.13.0</version>
+                </plugin>
 
-                                </excludes>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
 
-                            </filter>
+                    <version>3.3.0</version>
+                </plugin>
 
-                        </filters>
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
 
-                    </configuration>
+                    <version>3.4.2</version>
+                </plugin>
 
-                </execution>
+                <plugin>
+                    <artifactId>maven-install-plugin</artifactId>
 
-            </executions>
+                    <version>3.1.2</version>
+                </plugin>
 
-        </plugin>
+                <plugin>
+                    <artifactId>maven-deploy-plugin</artifactId>
 
-    </plugins>
+                    <version>3.1.2</version>
+                </plugin>
 
+                <plugin>
+                    <artifactId>maven-site-plugin</artifactId>
 
+                    <version>3.12.1</version>
+                </plugin>
 
-    <pluginManagement>
+                <plugin>
+                    <artifactId>maven-project-info-reports-plugin</artifactId>
 
-      <plugins>
-
-        <plugin>
-
-          <artifactId>maven-clean-plugin</artifactId>
-
-          <version>3.4.0</version>
-
-        </plugin>
-
-        <plugin>
-
-          <artifactId>maven-resources-plugin</artifactId>
-
-          <version>3.3.1</version>
-
-        </plugin>
-
-        <plugin>
-
-          <artifactId>maven-compiler-plugin</artifactId>
-
-          <version>3.13.0</version>
-
-        </plugin>
-
-        <plugin>
-
-          <artifactId>maven-surefire-plugin</artifactId>
-
-          <version>3.3.0</version>
-
-        </plugin>
-
-        <plugin>
-
-          <artifactId>maven-jar-plugin</artifactId>
-
-          <version>3.4.2</version>
-
-        </plugin>
-
-        <plugin>
-
-          <artifactId>maven-install-plugin</artifactId>
-
-          <version>3.1.2</version>
-
-        </plugin>
-
-        <plugin>
-
-          <artifactId>maven-deploy-plugin</artifactId>
-
-          <version>3.1.2</version>
-
-        </plugin>
-
-        <plugin>
-
-          <artifactId>maven-site-plugin</artifactId>
-
-          <version>3.12.1</version>
-
-        </plugin>
-
-        <plugin>
-
-          <artifactId>maven-project-info-reports-plugin</artifactId>
-
-          <version>3.6.1</version>
-
-        </plugin>
-
-      </plugins>
-
-    </pluginManagement>
-
-  </build>
-
+                    <version>3.6.1</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>

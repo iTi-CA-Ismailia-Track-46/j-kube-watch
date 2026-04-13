@@ -1,11 +1,12 @@
 package com.kofta.app.events;
 
+import com.kofta.app.utils.TimeStampParser;
+
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Event;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.informers.cache.Lister;
 
-import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -17,17 +18,6 @@ public class PodEventFactory {
         this.podCache = podCache;
     }
 
-    private ZonedDateTime parseTimestamp(String timestamp) {
-        if (timestamp == null || timestamp.isBlank()) {
-            return ZonedDateTime.now();
-        }
-        try {
-            return ZonedDateTime.parse(timestamp);
-        } catch (Exception e) {
-            return ZonedDateTime.now();
-        }
-    }
-
     public ImageEvent createImageEvent(Event event) {
         return new ImageEvent(
                 PodContext.fromEvent(event),
@@ -35,7 +25,7 @@ public class PodEventFactory {
                 extractImageName(event),
                 ImageStatus.fromString(event.getReason()),
                 event.getType(),
-                parseTimestamp(event.getLastTimestamp()));
+                TimeStampParser.parseTimestamp(event.getLastTimestamp()));
     }
 
     public SchedulingEvent createSchedulingEvent(Event event) {
@@ -46,7 +36,7 @@ public class PodEventFactory {
                 nodeName,
                 !event.getReason().equalsIgnoreCase("FAILEDSCHEDULING") && nodeName.isPresent(),
                 event.getType(),
-                parseTimestamp(event.getLastTimestamp()));
+                TimeStampParser.parseTimestamp(event.getLastTimestamp()));
     }
 
     public LifecycleEvent createLifecycleEvent(Event event) {
@@ -59,7 +49,7 @@ public class PodEventFactory {
                 container.get().getName(),
                 LifecycleEventStatus.fromString(event.getReason()),
                 event.getType(),
-                parseTimestamp(event.getLastTimestamp()));
+                TimeStampParser.parseTimestamp(event.getLastTimestamp()));
     }
 
     public ProbeFailureEvent createProbeFailureEvent(Event event) {
@@ -72,7 +62,7 @@ public class PodEventFactory {
                 container.get().getName(),
                 extractProbeType(event),
                 event.getType(),
-                parseTimestamp(event.getLastTimestamp()));
+                TimeStampParser.parseTimestamp(event.getLastTimestamp()));
     }
 
     public VolumeEvent createVolumeEvent(Event event) {
@@ -84,7 +74,7 @@ public class PodEventFactory {
                 !event.getReason().equalsIgnoreCase("FAILEDMOUNT"),
                 extractVolumeType(event, volumeName),
                 event.getType(),
-                parseTimestamp(event.getLastTimestamp()));
+                TimeStampParser.parseTimestamp(event.getLastTimestamp()));
     }
 
     public EvictionEvent createEvictionEvent(Event event) {
@@ -93,7 +83,7 @@ public class PodEventFactory {
                 event.getMessage(),
                 event.getReason(),
                 event.getType(),
-                parseTimestamp(event.getLastTimestamp()));
+                TimeStampParser.parseTimestamp(event.getLastTimestamp()));
     }
 
     private String extractVolumeName(Event event) {
