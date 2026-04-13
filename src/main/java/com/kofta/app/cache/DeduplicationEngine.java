@@ -3,21 +3,27 @@ package com.kofta.app.cache;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.RemovalCause;
+import com.kofta.app.dispatchers.AlertDispatcher;
 import com.kofta.app.events.PodEvent;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class DeduplicationEngine {
 
     private final Cache<EventCacheKey, EventSummary> cache;
     private static final int EXPIRATION_MINUTES = 2;
+    private final AlertDispatcher<PodEvent> dispatcher;
+    private final ExecutorService executor;
 
-    public DeduplicationEngine() {
+    public DeduplicationEngine(AlertDispatcher<PodEvent> dispatcher, ExecutorService executor) {
         this.cache =
                 Caffeine.newBuilder()
                         .expireAfterWrite(EXPIRATION_MINUTES, TimeUnit.MINUTES)
                         .removalListener(this::onCacheExpiry)
                         .build();
+        this.dispatcher = dispatcher;
+        this.executor = executor;
     }
 
     public Cache<EventCacheKey, EventSummary> getCache() {
@@ -49,7 +55,7 @@ public class DeduplicationEngine {
         if (summary != null && summary.getDuplicateCount() > 1) {
             String msg =
                     String.format(
-                            "Muted Alert Summary: Pod %s had %d additional %s events in the last %i minutes.",
+                            "Muted Alert Summary: Pod %s had %d additional %s events in the last %d minutes.",
                             key.context().name(),
                             summary.getDuplicateCount()
                                     - 1, // Minus 1 because we sent the first one
@@ -57,7 +63,8 @@ public class DeduplicationEngine {
                             EXPIRATION_MINUTES);
 
             System.out.println("DISPATCHING SUMMARY: " + msg);
-            // dispatcher.dispatch(new SummaryEvent(msg));
+            // TODO: Should have summary count later
+            executor.submit(() -> dispatcher.dispatch(summary.getEvent()));
         }
     }
 }
