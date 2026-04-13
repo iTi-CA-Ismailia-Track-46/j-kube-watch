@@ -11,6 +11,8 @@ public class EventRouter {
     }
 
     public PodEvent route(Event event) {
+        if (!"Pod".equals(event.getInvolvedObject().getKind())) return null;
+
         switch (event.getReason().toUpperCase()) {
             case "PULLED":
             case "PULLING":
@@ -30,7 +32,6 @@ public class EventRouter {
             case "RESTARTED":
             case "CREATED":
             case "BACKOFF":
-            case "KILLING":
                 {
                     return eventFactory.createLifecycleEvent(event);
                 }
@@ -45,6 +46,7 @@ public class EventRouter {
                 }
             case "EVICTED":
             case "PREEMPTING":
+            case "KILLING":
                 {
                     return eventFactory.createEvictionEvent(event);
                 }

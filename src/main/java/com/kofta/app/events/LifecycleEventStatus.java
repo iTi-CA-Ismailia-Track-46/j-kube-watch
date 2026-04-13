@@ -6,8 +6,7 @@ public enum LifecycleEventStatus {
     RELOAD,
     BACKOFF,
     RESTARTED,
-    CREATED,
-    KILLING;
+    CREATED;
 
     public static LifecycleEventStatus fromString(String input) {
         return LifecycleEventStatus.valueOf(input.trim().toUpperCase());
