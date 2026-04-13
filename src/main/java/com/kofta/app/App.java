@@ -7,6 +7,7 @@ import com.kofta.app.crd.receiver.AlertReceiver;
 import com.kofta.app.crd.sender.AlertSender;
 import com.kofta.app.dispatchers.CompositeAlertDispatcher;
 import com.kofta.app.dispatchers.ConsoleAlertDispatcher;
+import com.kofta.app.dispatchers.EmailAlertDispatcher;
 import com.kofta.app.events.EventRouter;
 import com.kofta.app.events.EventWatcher;
 import com.kofta.app.events.PodEventFactory;
@@ -19,6 +20,8 @@ import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
 import io.fabric8.kubernetes.client.informers.cache.Lister;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class App {
 
@@ -45,6 +48,7 @@ public class App {
                 new CompositeAlertDispatcher(List.of(consoleDispatcher));
 
         DeduplicationEngine deduplicationEngine = new DeduplicationEngine();
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
         System.out.println("[SYSTEM] Starting Informers...");
 
@@ -64,7 +68,7 @@ public class App {
         client.v1()
                 .events()
                 .inAnyNamespace()
-                .watch(new EventWatcher(router, multiDispatcher, deduplicationEngine));
+                .watch(new EventWatcher(router, multiDispatcher, deduplicationEngine, executor));
 
         Thread.sleep(Long.MAX_VALUE);
     }

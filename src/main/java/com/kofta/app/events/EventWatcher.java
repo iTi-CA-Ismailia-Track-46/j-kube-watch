@@ -1,9 +1,6 @@
 package com.kofta.app.events;
 
-import com.kofta.app.cache.CacheKeyExtractor;
 import com.kofta.app.cache.DeduplicationEngine;
-import com.kofta.app.cache.EventCacheKey;
-import com.kofta.app.cache.EventSummary;
 import com.kofta.app.dispatchers.AlertDispatcher;
 import com.kofta.app.utils.TimeStampParser;
 
@@ -13,21 +10,25 @@ import io.fabric8.kubernetes.client.WatcherException;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.concurrent.ExecutorService;
 
 public class EventWatcher implements Watcher<Event> {
 
     private final EventRouter router;
     private final AlertDispatcher<PodEvent> dispatcher;
     private final DeduplicationEngine deduplicationEngine;
+    private final ExecutorService executor;
     private static final ZonedDateTime APP_START_TIME = ZonedDateTime.now(ZoneId.of("UTC"));
 
     public EventWatcher(
             EventRouter router,
             AlertDispatcher<PodEvent> dispatcher,
-            DeduplicationEngine deduplicationEngine) {
+            DeduplicationEngine deduplicationEngine,
+            ExecutorService executor) {
         this.router = router;
         this.dispatcher = dispatcher;
         this.deduplicationEngine = deduplicationEngine;
+        this.executor = executor;
     }
 
     @Override
@@ -37,19 +38,12 @@ public class EventWatcher implements Watcher<Event> {
         }
 
         PodEvent podEvent = router.route(event);
-
         if (podEvent == null) return;
 
-        EventCacheKey key = CacheKeyExtractor.extract(podEvent);
-        var cache = deduplicationEngine.getCache();
-        EventSummary eventSummary = cache.getIfPresent(key);
-
-        if (eventSummary == null) {
-            cache.put(key, new EventSummary(podEvent));
-            dispatcher.dispatch(podEvent);
+        if (deduplicationEngine.tryRegister(podEvent)) {
+            executor.submit(() -> dispatcher.dispatch(podEvent));
         } else {
-            eventSummary.increment();
-            System.out.println("Suppressed duplicate event for " + key.context().name());
+            System.out.println("Suppressed duplicate event for " + podEvent.context().name());
         }
     }
 
