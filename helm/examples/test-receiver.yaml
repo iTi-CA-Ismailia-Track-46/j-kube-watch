@@ -1,0 +1,7 @@
+apiVersion: j-kube-watch.app/v1
+kind: AlertReceiver
+metadata:
+  name: manager-receiver
+spec:
+  email: "aboayad557@gmail.com"
+  senderRef: "main-sender"

@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: j-kube-watch-operator
+  namespace: { { .Release.Namespace } }
+spec:
+  replicas: { { .Values.replicaCount } }
+  selector:
+    matchLabels:
+      app: j-kube-watch-operator
+  template:
+    metadata:
+      labels:
+        app: j-kube-watch-operator
+    spec:
+      serviceAccountName: { { .Values.serviceAccount.name } }
+      containers:
+        - name: operator
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: { { .Values.image.pullPolicy } }
