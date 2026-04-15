@@ -1,6 +1,6 @@
 package com.kofta.app.crd.receiver;
 
-public class AlertReceiverSpec {
+public final class AlertReceiverSpec {
     private String email;
     private String senderRef;
 

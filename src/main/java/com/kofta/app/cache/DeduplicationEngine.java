@@ -26,10 +26,6 @@ public class DeduplicationEngine {
         this.executor = executor;
     }
 
-    public Cache<EventCacheKey, EventSummary> getCache() {
-        return this.cache;
-    }
-
     /**
      * Attempts to register an event in the deduplication cache. If the event is a duplicate within
      * the time window, its internal counter is incremented and the registration is rejected.
