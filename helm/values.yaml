@@ -3,9 +3,9 @@
 replicaCount: 1
 
 image:
-  repository: j-kube-watch
+  repository: kofta/j-kube-watch
   pullPolicy: Never
-  tag: "v1"
+  tag: "latest"
 
 serviceAccount:
   name: "j-kube-watch-sa"
