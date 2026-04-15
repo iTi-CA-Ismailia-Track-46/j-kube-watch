@@ -1,6 +1,6 @@
 package com.kofta.app.crd.sender;
 
-public class AlertSenderSpec {
+public final class AlertSenderSpec {
     private String email;
     private String host;
     private String port;
