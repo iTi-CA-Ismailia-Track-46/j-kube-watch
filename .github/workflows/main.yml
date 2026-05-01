@@ -1,6 +1,5 @@
 name: Build and Push Docker Image
 
-# الـ Action ده هيشتغل أوتوماتيك لما تعمل Push على فرع الـ main
 on:
   workflow_dispatch: 
   push:
